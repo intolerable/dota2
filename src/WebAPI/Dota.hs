@@ -41,7 +41,7 @@ webAPI = basicBuilder
   "http://api.steampowered.com"
 
 runWebAPI :: MonadIO m => WebAPIKey -> Language -> WebAPIT m a -> m (Either (APIError ()) a)
-runWebAPI k l (WebAPIT act) = do
+runWebAPI k l (WebAPIT act) =
   execAPI webAPI (k, l) $ do
     customizeRoute $ \(Route x ps m) ->
       Route x ( "format" =. ("json" :: Text)
