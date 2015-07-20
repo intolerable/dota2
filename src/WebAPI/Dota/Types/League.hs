@@ -15,12 +15,14 @@ module WebAPI.Dota.Types.League
 
 import WebAPI.Dota.Internal.SharedFields as SF
 
+import Control.Applicative
 import Control.Lens.TH
 import Data.Aeson
 import Data.Aeson.Types (Parser)
 import Data.Foldable
 import Data.Text (Text)
 import Network.API.Builder
+import Prelude
 
 newtype LeagueID = LeagueID Integer
   deriving (Show, Read, Eq, Ord)

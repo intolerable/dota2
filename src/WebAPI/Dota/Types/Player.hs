@@ -21,9 +21,11 @@ import WebAPI.Dota.Internal.SharedFields as SF
 import WebAPI.Dota.Types.Hero
 import WebAPI.Dota.Types.Item
 
+import Control.Applicative
 import Control.Lens.TH
-import Data.Text (Text)
 import Data.Aeson
+import Data.Text (Text)
+import Prelude
 
 data PlayerAccount =
   PlayerAccount { _playerAccountIdentifier :: Integer

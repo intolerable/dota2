@@ -7,9 +7,11 @@ module WebAPI.Dota.Types.Team
 
 import WebAPI.Dota.Internal.SharedFields as SF
 
+import Control.Applicative
 import Control.Lens
 import Data.Aeson
 import Data.Text (Text)
+import Prelude
 
 data Team =
   Team { _teamName :: Maybe Text

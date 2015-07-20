@@ -17,8 +17,10 @@ import WebAPI.Dota.Types.Ability
 import WebAPI.Dota.Types.Hero
 import WebAPI.Dota.Types.Player
 
+import Control.Applicative
 import Control.Lens.TH
 import Data.Aeson
+import Prelude
 
 data Scoreboard =
   Scoreboard { _scoreboardDuration :: Double

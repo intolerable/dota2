@@ -2,8 +2,10 @@ module WebAPI.Dota.Types.Hero where
 
 --import WebAPI.Dota.Internal.SharedFields
 
+import Control.Applicative
 import Data.Aeson
 import Data.Foldable
+import Prelude
 
 newtype HeroID = HeroID Integer
   deriving (Show, Read, Eq, Ord)

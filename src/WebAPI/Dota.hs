@@ -5,7 +5,6 @@ import WebAPI.Dota.Types.Match
 import WebAPI.Dota.Types.Item
 import WebAPI.Dota.Types.League
 import WebAPI.Dota.Types.Result
-import WebAPI.Dota.Types.Scoreboard
 
 import Control.Applicative
 import Control.Lens hiding (coerce)

@@ -6,9 +6,11 @@ module WebAPI.Dota.Types.Ability
 
 import WebAPI.Dota.Internal.SharedFields as SF
 
+import Control.Applicative
 import Control.Lens.TH
 import Data.Aeson
 import Data.Foldable
+import Prelude
 
 data Ability =
   Ability { _abilityIdentifier :: AbilityID

@@ -14,11 +14,13 @@ module WebAPI.Dota.Types.Item
 
 import WebAPI.Dota.Internal.SharedFields as SF
 
+import Control.Applicative
 import Control.Lens.TH
 import Data.Aeson
 import Data.Foldable
 import Data.Text (Text)
 import Network.API.Builder
+import Prelude
 
 data ItemBuild =
   ItemBuild ItemID ItemID ItemID ItemID ItemID ItemID
