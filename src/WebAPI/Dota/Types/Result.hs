@@ -1,7 +1,9 @@
 module WebAPI.Dota.Types.Result where
 
+import Control.Applicative
 import Data.Aeson hiding (Result)
 import Network.API.Builder
+import Prelude
 
 newtype Result a = Result { getResult :: a }
   deriving (Show)
