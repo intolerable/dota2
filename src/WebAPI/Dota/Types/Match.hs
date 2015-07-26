@@ -2,22 +2,25 @@ module WebAPI.Dota.Types.Match
   ( LiveMatchListing(LiveMatchListing)
   , LiveLeagueMatch(LiveLeagueMatch)
   , MatchID(..)
+  , Match(Match)
   , HasSeries
   , gameOfSeries
-  , SF.HasMatches(..)
-  , SF.HasIdentifier(..)
-  , SF.HasPlayers(..)
-  , SF.HasRadiantTeam(..)
-  , SF.HasDireTeam(..)
-  , SF.HasRadiantSeriesWins(..)
   , SF.HasDireSeriesWins(..)
-  , SF.HasSeriesType(..)
-  , SF.HasLobbyID(..)
-  , SF.HasSpectators(..)
-  , SF.HasStreamDelay(..)
+  , SF.HasDireTeam(..)
+  , SF.HasDuration(..)
+  , SF.HasIdentifier(..)
   , SF.HasLeagueID(..)
   , SF.HasLeagueTier(..)
-  , SF.HasScoreboard(..) ) where
+  , SF.HasLobbyID(..)
+  , SF.HasMatches(..)
+  , SF.HasPlayers(..)
+  , SF.HasRadiantSeriesWins(..)
+  , SF.HasRadiantTeam(..)
+  , SF.HasSeriesType(..)
+  , SF.HasSpectators(..)
+  , SF.HasStreamDelay(..)
+  , SF.HasScoreboard(..)
+  , SF.HasWinner(..) ) where
 
 import WebAPI.Dota.Internal.SharedFields as SF
 import WebAPI.Dota.Types.League
@@ -53,7 +56,7 @@ instance ToQuery MatchID where
 
 data LiveLeagueMatch =
   LiveLeagueMatch { _liveLeagueMatchIdentifier :: MatchID
-                  , _liveLeagueMatchPlayers :: [PlayerAccount]
+                  , _liveLeagueMatchPlayers :: [LivePlayerAccount]
                   , _liveLeagueMatchRadiantTeam :: Maybe Team
                   , _liveLeagueMatchDireTeam :: Maybe Team
                   , _liveLeagueMatchRadiantSeriesWins :: Integer
@@ -64,7 +67,7 @@ data LiveLeagueMatch =
                   , _liveLeagueMatchStreamDelay :: Integer
                   , _liveLeagueMatchLeagueID :: LeagueID
                   , _liveLeagueMatchLeagueTier :: LeagueTier
-                  , _liveLeagueMatchScoreboard :: Maybe Scoreboard }
+                  , _liveLeagueMatchScoreboard :: Maybe LiveScoreboard }
   deriving (Show, Eq)
 
 instance FromJSON LiveLeagueMatch where
@@ -82,13 +85,37 @@ instance FromJSON LiveLeagueMatch where
                     <*> o .: "league_id"
                     <*> o .: "league_tier"
                     <*> o .:? "scoreboard"
-  parseJSON _ = fail "Match parse failed"
+  parseJSON _ = fail "LiveLeagueMatch parse failed"
 
 data Match =
-  Match { _matchWinner :: Bool
+  Match { _matchIdentifier :: MatchID
+        , _matchWinner :: Faction
         , _matchDuration :: Integer
-        , _matchStartTime :: Integer }
+        , _matchStartTime :: Integer
+        , _matchRadiantTeam :: Team
+        , _matchDireTeam :: Team
+        , _matchPlayers :: [Player] }
   deriving (Show, Read, Eq)
+
+instance FromJSON Match where
+  parseJSON (Object o) =
+    Match <$> o .: "match_id"
+          <*> (if_ Radiant Dire <$> o .: "radiant_win")
+          <*> o .: "duration"
+          <*> o .: "start_time"
+          <*> (Team <$> o .:? "radiant_name"
+                    <*> o .:? "radiant_team_id"
+                    <*> o .:? "radiant_logo"
+                    <*> pure Nothing)
+          <*> (Team <$> o .:? "dire_name"
+                    <*> o .:? "dire_team_id"
+                    <*> o .:? "dire_logo"
+                    <*> pure Nothing)
+          <*> o .: "players"
+  parseJSON _ = fail "Match parse failed"
+
+if_ :: a -> a -> Bool -> a
+if_ t f b = if b then t else f
 
 type HasSeries s a =
   ( HasRadiantSeriesWins s a
@@ -100,3 +127,4 @@ gameOfSeries = to $ \x -> 1 + (x^.radiantSeriesWins) + (x^.direSeriesWins)
 
 makeFields ''LiveLeagueMatch
 makeFields ''LiveMatchListing
+makeFields ''Match

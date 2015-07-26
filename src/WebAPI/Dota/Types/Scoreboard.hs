@@ -1,5 +1,6 @@
 module WebAPI.Dota.Types.Scoreboard
-  ( Scoreboard(Scoreboard)
+  ( LiveScoreboard(LiveScoreboard)
+  , LiveTeamScore(LiveTeamScore)
   , SF.HasDuration(..)
   , SF.HasRoshTimer(..)
   , SF.HasRadiantTeam(..)
@@ -22,41 +23,41 @@ import Control.Lens.TH
 import Data.Aeson
 import Prelude
 
-data Scoreboard =
-  Scoreboard { _scoreboardDuration :: Double
-             , _scoreboardRoshTimer :: Maybe Integer
-             , _scoreboardRadiantTeam :: Maybe TeamScore
-             , _scoreboardDireTeam :: Maybe TeamScore }
+data LiveScoreboard =
+  LiveScoreboard { _liveScoreboardDuration :: Integer
+                 , _liveScoreboardRoshTimer :: Maybe Integer
+                 , _liveScoreboardRadiantTeam :: Maybe LiveTeamScore
+                 , _liveScoreboardDireTeam :: Maybe LiveTeamScore }
   deriving (Show, Eq)
 
-instance FromJSON Scoreboard where
+instance FromJSON LiveScoreboard where
   parseJSON (Object o) =
-    Scoreboard <$> o .: "duration"
-               <*> o .:? "rosh_respawn_timer"
-               <*> o .:? "radiant"
-               <*> o .:? "dire"
+    LiveScoreboard <$> o .: "duration"
+                 <*> o .:? "rosh_respawn_timer"
+                 <*> o .:? "radiant"
+                 <*> o .:? "dire"
   parseJSON _ = fail "Scoreboard parse failed"
 
-data TeamScore =
-  TeamScore { _teamScoreScore :: Integer
-            , _teamScoreTowerState :: Integer
-            , _teamScoreBarracksState :: Integer
-            , _teamScorePicks :: Maybe [HeroID]
-            , _teamScoreBans :: Maybe [HeroID]
-            , _teamScorePlayers :: [Player]
-            , _teamScoreAbilities :: Maybe [Ability] }
+data LiveTeamScore =
+  LiveTeamScore { _liveTeamScoreScore :: Integer
+                , _liveTeamScoreTowerState :: Integer
+                , _liveTeamScoreBarracksState :: Integer
+                , _liveTeamScorePicks :: Maybe [HeroID]
+                , _liveTeamScoreBans :: Maybe [HeroID]
+                , _liveTeamScorePlayers :: [LivePlayer]
+                , _liveTeamScoreAbilities :: Maybe [Ability] }
   deriving (Show, Eq)
 
-instance FromJSON TeamScore where
+instance FromJSON LiveTeamScore where
   parseJSON (Object o) =
-    TeamScore <$> o .: "score"
-              <*> o .: "tower_state"
-              <*> o .: "barracks_state"
-              <*> o .:? "picks"
-              <*> o .:? "bans"
-              <*> o .: "players"
-              <*> o .:? "abilities"
-  parseJSON _ = fail "TeamScore parse failed"
+    LiveTeamScore <$> o .: "score"
+                  <*> o .: "tower_state"
+                  <*> o .: "barracks_state"
+                  <*> o .:? "picks"
+                  <*> o .:? "bans"
+                  <*> o .: "players"
+                  <*> o .:? "abilities"
+  parseJSON _ = fail "LiveTeamScore parse failed"
 
-makeFields ''Scoreboard
-makeFields ''TeamScore
+makeFields ''LiveScoreboard
+makeFields ''LiveTeamScore

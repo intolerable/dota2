@@ -1,9 +1,11 @@
 module WebAPI.Dota where
 
 import WebAPI.Dota.Internal.SharedFields
-import WebAPI.Dota.Types.Match
+import WebAPI.Dota.Types.Hero
 import WebAPI.Dota.Types.Item
 import WebAPI.Dota.Types.League
+import WebAPI.Dota.Types.Match
+import WebAPI.Dota.Types.Player
 import WebAPI.Dota.Types.Result
 
 import Control.Applicative
@@ -85,8 +87,30 @@ getPrizePool lid = fmap getResult $ WebAPIT $ runRoute $
         ["leagueid" =. lid]
         "GET"
 
-getMatchDetails :: MonadIO m => MatchID -> WebAPIT m Value
+getMatchDetails :: MonadIO m => MatchID -> WebAPIT m Match
 getMatchDetails m = fmap getResult $ WebAPIT $ runRoute $
   Route ["IDOTA2Match_570", "GetMatchDetails", "v1" ]
         ["match_id" =. m]
         "GET"
+
+getHeroes :: MonadIO m => WebAPIT m HeroListing
+getHeroes = fmap getResult $ WebAPIT $ runRoute $
+  Route ["IEconDOTA2_570", "GetHeroes", "v1" ]
+        []
+        "GET"
+
+getHeroMap :: MonadIO m => WebAPIT m (Map HeroID Hero)
+getHeroMap = do
+  HeroListing hs <- getHeroes
+  return $ Map.fromList $ map (\x -> (view identifier x, x)) hs
+
+getPlayerSummaries :: MonadIO m => [AccountID] -> WebAPIT m AccountListing
+getPlayerSummaries as = fmap getResult $ WebAPIT $ runRoute $
+  Route ["ISteamUser", "GetPlayerSummaries", "v2" ]
+        ["steamids" =. as]
+        "GET"
+
+getPlayerSummaryMap :: MonadIO m => [AccountID] -> WebAPIT m (Map AccountID Account)
+getPlayerSummaryMap as = do
+  AccountListing accs <- getPlayerSummaries as
+  return $ Map.fromList $ map (\x -> (view identifier x, x)) accs

@@ -1,5 +1,6 @@
 module WebAPI.Dota.Types.Team
   ( Team(Team)
+  , Faction(..)
   , SF.HasName(..)
   , SF.HasIdentifier(..)
   , SF.HasLogo(..)
@@ -12,6 +13,9 @@ import Control.Lens
 import Data.Aeson
 import Data.Text (Text)
 import Prelude
+
+data Faction = Radiant | Dire
+  deriving (Show, Read, Eq)
 
 data Team =
   Team { _teamName :: Maybe Text
