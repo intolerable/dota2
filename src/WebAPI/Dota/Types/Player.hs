@@ -1,5 +1,7 @@
 module WebAPI.Dota.Types.Player
   ( AccountID(..)
+  , AccountID64(..)
+  , as64
   , Account(Account)
   , AccountListing(AccountListing)
   , LivePlayerAccount(LivePlayerAccount)
@@ -7,6 +9,8 @@ module WebAPI.Dota.Types.Player
   , Player(Player)
   , kda
   , cs
+  , radiantPlayers
+  , direPlayers
   , SF.HasSlot(..)
   , SF.HasAccountID(..)
   , SF.HasAccounts(..)
@@ -43,6 +47,7 @@ import Data.Bits
 import Data.Text (Text)
 import Network.API.Builder.Query
 import Prelude
+import Text.Read
 
 newtype AccountID = AccountID Integer
   deriving (Show, Read, Eq, Ord)
@@ -53,22 +58,41 @@ instance ToQuery AccountID where
 instance FromJSON AccountID where
   parseJSON x = AccountID <$> parseJSON x
 
+as64 :: Iso' AccountID AccountID64
+as64 = iso f t
+  where f (AccountID n) = AccountID64 (n + 76561197960265728)
+        t (AccountID64 n) = AccountID (n - 76561197960265728)
+
+newtype AccountID64 = AccountID64 Integer
+  deriving (Show, Read, Eq, Ord)
+
+instance ToQuery AccountID64 where
+  toQuery k (AccountID64 v) = toQuery k v
+
+instance FromJSON AccountID64 where
+  parseJSON x = AccountID64 <$> parseJSON x
+
 newtype AccountListing = AccountListing { _accountListingAccounts :: [Account] }
-  deriving (Show, Read, Eq)
+  deriving (Show, Eq)
 
 instance FromJSON AccountListing where
-  parseJSON x = AccountListing <$> parseJSON x
+  parseJSON (Object o) =
+    AccountListing <$> o .: "players"
+  parseJSON _ = fail "AccountListing parse failed"
 
 data Account =
-  Account { _accountIdentifier :: AccountID
+  Account { _accountIdentifier :: AccountID64
           , _accountName :: Text }
   deriving (Show, Read, Eq)
 
 instance FromJSON Account where
   parseJSON (Object o) =
-    Account <$> o .: "steamid"
+    Account <$> (AccountID64 <$> (o .: "steamid" >>= readM))
             <*> o .: "personaname"
   parseJSON _ = fail "Account parse failed"
+
+readM :: (Read a, Monad m) => String -> m a
+readM = maybe (fail "read failed") return . readMaybe
 
 data LivePlayerAccount =
   LivePlayerAccount { _livePlayerAccountIdentifier :: AccountID
@@ -183,6 +207,12 @@ kda = to $ (,,) <$> view kills <*> view deaths <*> view assists
 
 cs :: (HasLastHits s a, HasDenies s a) => Getter s (a, a)
 cs = to $ (,) <$> view lastHits <*> view denies
+
+direPlayers :: (HasPlayers s [a], HasFaction a Faction) => Traversal' s a
+direPlayers = players.traverse.filtered (\x -> view faction x == Dire)
+
+radiantPlayers :: (HasPlayers s [a], HasFaction a Faction) => Traversal' s a
+radiantPlayers = players.traverse.filtered (\x -> view faction x == Radiant)
 
 makeFields ''Account
 makeFields ''AccountListing

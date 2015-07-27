@@ -107,10 +107,10 @@ getHeroMap = do
 getPlayerSummaries :: MonadIO m => [AccountID] -> WebAPIT m AccountListing
 getPlayerSummaries as = fmap getResult $ WebAPIT $ runRoute $
   Route ["ISteamUser", "GetPlayerSummaries", "v2" ]
-        ["steamids" =. as]
+        ["steamids" =. map (view as64) as]
         "GET"
 
-getPlayerSummaryMap :: MonadIO m => [AccountID] -> WebAPIT m (Map AccountID Account)
+getPlayerSummaryMap :: MonadIO m => [AccountID] -> WebAPIT m (Map AccountID64 Account)
 getPlayerSummaryMap as = do
   AccountListing accs <- getPlayerSummaries as
   return $ Map.fromList $ map (\x -> (view identifier x, x)) accs

@@ -45,5 +45,6 @@ library
     LambdaCase
     MultiParamTypeClasses
     OverloadedStrings
+    RankNTypes
     TemplateHaskell
   ghc-options: -Wall
