@@ -13,6 +13,7 @@ import Control.Applicative
 import Control.Lens
 import Data.Aeson
 import Data.Foldable
+import Data.Monoid
 import Data.Text (Text)
 import Network.API.Builder.Receive
 import Prelude
