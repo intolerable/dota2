@@ -4,29 +4,36 @@ module WebAPI.Dota.Types.Match
   , MatchID(..)
   , Match(Match)
   , HasSeries
+  , PickBan(PickBan)
   , gameOfSeries
   , SF.HasDireSeriesWins(..)
   , SF.HasDireTeam(..)
+  , SF.HasDraft(..)
   , SF.HasDuration(..)
+  , SF.HasFaction(..)
+  , SF.HasHeroID(..)
   , SF.HasIdentifier(..)
+  , SF.HasIsPick(..)
   , SF.HasLeagueID(..)
   , SF.HasLeagueTier(..)
   , SF.HasLobbyID(..)
   , SF.HasMatches(..)
+  , SF.HasOrder(..)
   , SF.HasPlayers(..)
   , SF.HasRadiantSeriesWins(..)
   , SF.HasRadiantTeam(..)
+  , SF.HasScoreboard(..)
   , SF.HasSeriesType(..)
   , SF.HasSpectators(..)
   , SF.HasStreamDelay(..)
-  , SF.HasScoreboard(..)
   , SF.HasWinner(..) ) where
 
 import WebAPI.Dota.Internal.SharedFields as SF
+import WebAPI.Dota.Types.Hero
 import WebAPI.Dota.Types.League
 import WebAPI.Dota.Types.Player
-import WebAPI.Dota.Types.Team
 import WebAPI.Dota.Types.Scoreboard
+import WebAPI.Dota.Types.Team
 
 import Control.Applicative
 import Control.Lens
@@ -94,7 +101,8 @@ data Match =
         , _matchStartTime :: Integer
         , _matchRadiantTeam :: Team
         , _matchDireTeam :: Team
-        , _matchPlayers :: [Player] }
+        , _matchPlayers :: [Player]
+        , _matchDraft :: [PickBan] }
   deriving (Show, Read, Eq)
 
 instance FromJSON Match where
@@ -112,10 +120,31 @@ instance FromJSON Match where
                     <*> o .:? "dire_logo"
                     <*> pure Nothing)
           <*> o .: "players"
+          <*> o .: "picks_bans"
   parseJSON _ = fail "Match parse failed"
+
+data PickBan =
+  PickBan { _pickBanIsPick :: Bool
+          , _pickBanHeroID :: HeroID
+          , _pickBanFaction :: Faction
+          , _pickBanOrder :: Integer }
+  deriving (Show, Read, Eq)
+
+instance FromJSON PickBan where
+  parseJSON (Object o) =
+    PickBan <$> o .: "is_pick"
+            <*> o .: "hero_id"
+            <*> (factionID =<< o .: "team")
+            <*> o .: "order"
+  parseJSON _ = fail "PickBan parse failed"
 
 if_ :: a -> a -> Bool -> a
 if_ t f b = if b then t else f
+
+factionID :: Monad m => Int -> m Faction
+factionID 0 = return Radiant
+factionID 1 = return Dire
+factionID _ = fail "Invalid faction ID"
 
 type HasSeries s a =
   ( HasRadiantSeriesWins s a
@@ -128,3 +157,4 @@ gameOfSeries = to $ \x -> 1 + (x^.radiantSeriesWins) + (x^.direSeriesWins)
 makeFields ''LiveLeagueMatch
 makeFields ''LiveMatchListing
 makeFields ''Match
+makeFields ''PickBan
